@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=350, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' ipc: ws:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' blob:;" />
+    <title>Opera LW</title>
+    <style>
+      :root { color-scheme: dark light; }
+      *, *::before, *::after { box-sizing: border-box; }
+      html, body { height: 100%; margin: 0; overflow: hidden; }
+      body {
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
+        background: #0f0f12; color: #e6e6e6;
+      }
+      .wrap { display: grid; grid-template-rows: 1fr auto; place-items: stretch; height: 100%; padding: 6px; gap: 6px; overflow: hidden; }
+      .drop {
+        width: 100%; border: 2px dashed #3a3a42; border-radius: 12px; min-height: 160px;
+        display: grid; place-items: center; background: #141419; color: #bdbdc7; 
+        transition: border-color .15s ease, background-color .15s ease, color .15s ease;
+        user-select: none; text-align: center; padding: 10px; overflow: hidden;
+      }
+      .drop.active { border-color: #7b5cff; background: #171724; color: #e6e6ff; }
+      .hint { opacity: 0.85; font-size: 14px; letter-spacing: .2px; }
+      .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; justify-content: center; }
+      .badge { font-size: 11px; background: #1d1d26; border: 1px solid #2c2c38; padding: 4px 8px; border-radius: 999px; color: #d5d5e2; }
+      .badge.warn { border-color: #7b5cff; color: #e6e6ff; }
+      .sizes { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
+      .sizes label { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; background: #1a1a22; border: 1px solid #2c2c38; padding: 6px 10px; border-radius: 999px; }
+      .targets { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
+      .targets label { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; background: #1a1a22; border: 1px solid #2c2c38; padding: 6px 10px; border-radius: 999px; }
+      .controls { display: flex; gap: 8px; }
+      .btn { appearance: none; border: 1px solid #3a3a42; background: #1a1a22; color: #f0f0f5;
+        padding: 8px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; flex: 1; }
+      .btn:hover { background: #20202b; }
+      .btn.primary { border-color: #7b5cff; background: #221f35; color: #eae6ff; }
+      .btn.primary:hover { background: #2a254a; }
+      .btn.danger { border-color: #5c3232; background: #2a1c1c; color: #ffdede; }
+      .meta { margin-top: 8px; font-size: 12px; color: #bdbdc7; }
+      .trim { display: none; margin-top: 8px; font-size: 12px; }
+      .trim.visible { display: block; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="drop" id="drop" role="region" aria-label="Drop a video file">
+        <div>
+          <div class="hint" id="hint">Drop a video file here (Finder) or Add…</div>
+          <div style="height:10px"></div>
+          <button id="btnAdd" class="btn" type="button">Add</button>
+          <input id="fileInput" type="file" accept="video/mp4,video/quicktime,video/webm,image/gif" style="display:none" />
+          <div class="badges" id="badges" aria-live="polite"></div>
+          <div class="meta trim" id="trimBlock">
+            <div>Trim segment (s):</div>
+            <div>
+              <label>Start <input id="trimStart" type="number" step="0.1" min="0" value="0"></label>
+              <label>End <input id="trimEnd" type="number" step="0.1" min="0" value="0"></label>
+            </div>
+          </div>
+          <div class="sizes" id="sizes">
+            <label><input id="size1080" type="checkbox" checked>1080p</label>
+            <label><input id="size1440" type="checkbox">1440p</label>
+            <label><input id="size2160" type="checkbox">2160p</label>
+          </div>
+          <div class="targets" id="targets">
+            <label><input id="tOpera" type="checkbox">Opera</label>
+            <label><input id="tGX" type="checkbox">Opera GX</label>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <button id="btnInstall" class="btn primary" type="button" disabled>Install</button>
+        <button id="btnExit" class="btn danger" type="button">Exit</button>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+  </html>
