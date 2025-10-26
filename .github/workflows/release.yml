@@ -34,6 +34,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build, sign and notarize with Tauri Action
+        if: ${{ secrets.APPLE_ID != '' && secrets.APPLE_PASSWORD != '' && secrets.APPLE_TEAM_ID != '' }}
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -49,3 +50,18 @@ jobs:
           releaseName: Opera Live Wallpaper ${{ github.ref_name }}
           releaseDraft: false
           prerelease: false
+
+      - name: Build unsigned (no Apple secrets)
+        if: ${{ !(secrets.APPLE_ID != '' && secrets.APPLE_PASSWORD != '' && secrets.APPLE_TEAM_ID != '') }}
+        run: pnpm tauri:build
+
+      - name: Upload unsigned release assets
+        if: ${{ !(secrets.APPLE_ID != '' && secrets.APPLE_PASSWORD != '' && secrets.APPLE_TEAM_ID != '') }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Opera Live Wallpaper ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            src-tauri/target/release/bundle/dmg/*.dmg
+            src-tauri/target/release/bundle/macos/*.app
