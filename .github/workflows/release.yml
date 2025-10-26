@@ -24,29 +24,25 @@ jobs:
       - name: Enable corepack (pnpm)
         run: corepack enable
 
-      - name: Show pnpm version
-        run: pnpm -v
-
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build Tauri app (macOS)
-        run: pnpm tauri:build
-
-      - name: List bundle output
-        run: |
-          ls -R src-tauri/target/release/bundle || true
-
-      - name: Upload release assets
-        uses: softprops/action-gh-release@v2
+      - name: Build, sign and notarize with Tauri Action
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Apple ID credentials (App-Specific Password)
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          # Signing certificate (optional if already in runner keychain).
+          # Provide a base64-encoded .p12 and its password to import on CI:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Opera Live Wallpaper ${{ github.ref_name }}
-          generate_release_notes: true
-          files: |
-            src-tauri/target/release/bundle/dmg/*.dmg
-            src-tauri/target/release/bundle/macos/*.app
-
+          tauriScript: pnpm tauri
+          args: build
+          tagName: ${{ github.ref_name }}
+          releaseName: Opera Live Wallpaper ${{ github.ref_name }}
+          releaseDraft: false
+          prerelease: false
