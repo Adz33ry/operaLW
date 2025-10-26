@@ -2,6 +2,7 @@
 
 mod commands;
 mod ffmpeg;
+mod util;
 
 fn main() {
     tauri::Builder::default()

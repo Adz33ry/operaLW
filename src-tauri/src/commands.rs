@@ -2,6 +2,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::process::Command as StdCommand;
 use std::{fs, io::Write, path::Path, path::PathBuf};
+use crate::util;
 use tauri::command;
 
 #[derive(Serialize, Deserialize)]
@@ -68,7 +69,9 @@ pub async fn probe_video(path: String) -> Result<VideoMeta, String> {
         &path,
     ];
 
-    let out = StdCommand::new("ffprobe")
+    let ffprobe = util::resolve_bin("ffprobe", Some("OPERALW_FFPROBE"))
+        .ok_or_else(|| "ffprobe not found. Install ffmpeg (brew install ffmpeg) or set OPERALW_FFPROBE to its path.".to_string())?;
+    let out = StdCommand::new(ffprobe)
         .args(&args)
         .output()
         .map_err(|e| format!("failed to spawn ffprobe: {}", e))?;
@@ -166,9 +169,13 @@ fn run(cmd: &mut StdCommand) -> Result<(), String> {
 
 #[command]
 pub async fn export_package(req: ExportRequest) -> Result<String, String> {
-    // Ensure ffmpeg/ffprobe available
-    run(StdCommand::new("ffprobe").arg("-version"))?;
-    run(StdCommand::new("ffmpeg").arg("-version"))?;
+    // Ensure ffmpeg/ffprobe available (resolve binary on macOS GUI launch)
+    let ffprobe = util::resolve_bin("ffprobe", Some("OPERALW_FFPROBE"))
+        .ok_or_else(|| "ffprobe not found. Install ffmpeg (brew install ffmpeg) or set OPERALW_FFPROBE to its path.".to_string())?;
+    let ffmpeg = util::resolve_bin("ffmpeg", Some("OPERALW_FFMPEG"))
+        .ok_or_else(|| "ffmpeg not found. Install ffmpeg (brew install ffmpeg) or set OPERALW_FFMPEG to its path.".to_string())?;
+    run(StdCommand::new(&ffprobe).arg("-version"))?;
+    run(StdCommand::new(&ffmpeg).arg("-version"))?;
 
     // Probe input to decide FPS policy
     let meta = probe_video(req.path.clone()).await?;
@@ -238,7 +245,7 @@ pub async fn export_package(req: ExportRequest) -> Result<String, String> {
         "-vsync".into(), "cfr".into(),
         out_video.to_string_lossy().into(),
     ]);
-    let status = StdCommand::new("ffmpeg").args(args.iter().map(|s| s.as_str())).output();
+    let status = StdCommand::new(&ffmpeg).args(args.iter().map(|s| s.as_str())).output();
     match status {
         Ok(o) if o.status.success() => {
             generated.push((out_video.clone(), "background.webm".into()));

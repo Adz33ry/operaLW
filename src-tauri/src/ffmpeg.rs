@@ -3,6 +3,7 @@ use std::path::Path;
 use std::process::{Command, Stdio};
 
 use anyhow::{Context, Result};
+use crate::util;
 
 pub fn extract_poster(input: &Path, poster_out: &Path) -> Result<()> {
     if let Some(dir) = poster_out.parent() { fs::create_dir_all(dir)?; }
@@ -16,7 +17,9 @@ pub fn extract_poster(input: &Path, poster_out: &Path) -> Result<()> {
         poster_out.to_str().unwrap(),
     ];
 
-    let out = Command::new("ffmpeg")
+    let ffmpeg = util::resolve_bin("ffmpeg", Some("OPERALW_FFMPEG"))
+        .ok_or_else(|| anyhow::anyhow!("ffmpeg not found. Install ffmpeg (brew install ffmpeg) or set OPERALW_FFMPEG to its path."))?;
+    let out = Command::new(ffmpeg)
         .args(args)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
