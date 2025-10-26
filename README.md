@@ -67,9 +67,5 @@ Run the installed app from Terminal (for diagnostics):
 ## Support
 If this tool helps you, consider a Ko‑fi: https://ko-fi.com/K3K21NBUDO
 
-## Known limitations
-- Currently exports to the Opera GX themes folder; additional Opera directories may be supported later.
-- Encoding long videos can take significant time.
-
 ## License
 FFmpeg licensing: see `LICENSES/ffmpeg.txt`. The application’s own license is defined by the repository owner.
