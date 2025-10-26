@@ -42,26 +42,36 @@ jobs:
           version: 9
           run_install: false
 
+      - name: Ensure pnpm via corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@9 --activate
+          pnpm -v
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build, sign (if secrets) and publish with Tauri Action
-        uses: tauri-apps/tauri-action@v0
+      - name: Build app (unsigned if no Apple secrets)
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # These secrets are optional; if absent, build proceeds unsigned
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: pnpm tauri:build
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
         with:
-          tauriScript: pnpm
-          args: build
-          tagName: ${{ steps.vars.outputs.tag }}
-          releaseName: Opera Live Wallpaper ${{ steps.vars.outputs.tag }}
-          releaseDraft: false
+          tag_name: ${{ steps.vars.outputs.tag }}
+          name: Opera Live Wallpaper ${{ steps.vars.outputs.tag }}
+          generate_release_notes: true
+          make_latest: true
+          draft: false
           prerelease: false
+          files: |
+            src-tauri/target/release/bundle/dmg/*.dmg
+            src-tauri/target/release/bundle/macos/*.app
