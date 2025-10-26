@@ -17,7 +17,8 @@ A small macOS desktop utility that packages a video into a wallpaper theme for O
 
 ## Install & Run
 - Direct install (recommended): download the latest `.dmg` from GitHub Releases and drag the app into Applications.
-  - Releases: https://github.com/Adz33ry/operaLW/releases
+  - Latest release: https://github.com/Adz33ry/operaLW/releases/latest
+  - Full list: https://github.com/Adz33ry/operaLW/releases
 
 - Build locally: generate a `.dmg` and install the app
   - `pnpm install`
@@ -27,6 +28,26 @@ A small macOS desktop utility that packages a video into a wallpaper theme for O
 - Development (dev):
   - `pnpm install`
   - `pnpm tauri:dev`
+
+## End‑User Install (macOS)
+These steps are for non‑technical users who just want to install and run the app from GitHub.
+
+- Download the `.dmg` from the latest Release.
+- Double‑click the `.dmg` to mount it.
+- In the window that opens, drag `Opera Live Wallpaper.app` into `Applications`.
+- Eject the mounted disk (right‑click → Eject), then open `Applications` and launch the app.
+
+First launch on macOS
+- If the app is signed and notarized, it opens normally.
+- If you see a security prompt (unidentified developer or “can’t be opened”):
+  - Right‑click on `Opera Live Wallpaper.app` → Open → Open (this is a one‑time action per app).
+  - Or go to System Settings → Privacy & Security → scroll to the bottom → “Open Anyway”.
+- If you see “is damaged and can’t be opened” after downloading from a browser, it’s Gatekeeper quarantine. The two no‑terminal ways above usually work. If needed and you’re comfortable with Terminal, you can remove the quarantine attribute:
+  - `xattr -dr com.apple.quarantine "/Applications/Opera Live Wallpaper.app"`
+
+Notes
+- Always run the app from `Applications` (not directly from inside the `.dmg`).
+- On first use, Opera GX may require a browser restart to pick up the newly installed theme.
 
 ## Usage
 1. Launch the app and drop a video file into the window, or click “Add”.
