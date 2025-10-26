@@ -52,7 +52,16 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-        run: npm run tauri:build
+          RUST_BACKTRACE: 1
+          TAURI_LOG_LEVEL: debug
+        run: |
+          set -euxo pipefail
+          npm run tauri:build
+
+      - name: List bundle output
+        run: |
+          echo 'Listing bundle directory (if any):'
+          ls -R src-tauri/target/release/bundle || true
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
@@ -63,6 +72,7 @@ jobs:
           make_latest: true
           draft: false
           prerelease: false
+          fail_on_unmatched_files: false
           files: |
             src-tauri/target/release/bundle/dmg/*.dmg
             src-tauri/target/release/bundle/macos/*.app
