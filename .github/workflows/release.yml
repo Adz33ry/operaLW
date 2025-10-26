@@ -21,26 +21,29 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
 
-      - name: Enable corepack (pnpm)
-        run: corepack enable
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Build, sign and notarize with Tauri Action
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Apple ID credentials (App-Specific Password)
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          # Signing certificate (optional if already in runner keychain).
-          # Provide a base64-encoded .p12 and its password to import on CI:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
         with:
-          tauriScript: pnpm tauri
+          tauriScript: pnpm
           args: build
           tagName: ${{ github.ref_name }}
           releaseName: Opera Live Wallpaper ${{ github.ref_name }}
