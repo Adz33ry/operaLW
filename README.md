@@ -16,7 +16,10 @@ A small macOS desktop utility that packages a video into a wallpaper theme for O
   - Recommended via Homebrew: `brew install ffmpeg`.
 
 ## Install & Run
-- Release build: generate a `.dmg` and install the app
+- Direct install (recommended): download the latest `.dmg` from GitHub Releases and drag the app into Applications.
+  - Releases: https://github.com/Adz33ry/operaLW/releases
+
+- Build locally: generate a `.dmg` and install the app
   - `pnpm install`
   - `pnpm tauri:build`
   - Install the generated `Opera Live Wallpaper.dmg` and launch the app from Applications.
