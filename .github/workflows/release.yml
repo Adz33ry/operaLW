@@ -34,7 +34,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          # No cache here to avoid lockfile requirement
 
       # pnpm is not required in CI; use npm everywhere for reliability
 
