@@ -1,72 +1,72 @@
 # Opera Live Wallpaper (operaLW)
 
-Невелика десктоп‑утиліта для macOS, що пакує відео у тему шпалер для Opera/Opera GX. Додаток дозволяє перетягнути відеофайл, обрізати за бажанням, за потреби адаптивно обрізати під 16:9, перекодувати у VP9 та встановити як тему шпалер у браузері.
+A small macOS desktop utility that packages a video into a wallpaper theme for Opera/Opera GX. Drop a video, optionally trim a segment, adaptively crop to 16:9 if needed, transcode to VP9, and install it as a browser theme.
 
-## Можливості
-- Перетягніть відео або оберіть через «Add» (`.mp4`, `.mov`, `.webm`, `.gif`).
-- Автовизначення метаданих (тривалість, роздільність, FPS, VFR).
-- Необов’язкове обрізання фрагмента за часом (Start/End).
-- Адаптивний crop до 16:9 або «No crop».
-- Вибір висоти кодування: 1080p/1440p/2160p (один із варіантів).
-- Експорт і встановлення теми в директорію Opera GX (потрібне перезапускання браузера).
+## Features
+- Drag & drop a video or choose via “Add” (`.mp4`, `.mov`, `.webm`, `.gif`).
+- Auto‑detect metadata (duration, resolution, FPS, VFR).
+- Optional time‑based trimming (Start/End).
+- Adaptive crop to 16:9 or “No crop”.
+- Choose output height: 1080p/1440p/2160p (one option).
+- Export and install the theme into Opera GX’s themes directory (restart browser afterwards).
 
-## Вимоги
+## Requirements
 - macOS 12.0+.
-- FFmpeg (разом із `ffprobe`) має бути встановлений у системі.
-  - Рекомендовано через Homebrew: `brew install ffmpeg`.
+- FFmpeg (with `ffprobe`) installed on the system.
+  - Recommended via Homebrew: `brew install ffmpeg`.
 
-## Встановлення й запуск
-- Готовий білд: згенеруйте `.dmg` і встановіть програму
+## Install & Run
+- Release build: generate a `.dmg` and install the app
   - `pnpm install`
   - `pnpm tauri:build`
-  - Встановіть створений `Opera Live Wallpaper.dmg` і запустіть програму з «Програм».
+  - Install the generated `Opera Live Wallpaper.dmg` and launch the app from Applications.
 
-- Запуск для розробки (dev):
+- Development (dev):
   - `pnpm install`
   - `pnpm tauri:dev`
 
-## Як користуватись
-1. Запустіть додаток і перетягніть відеофайл у вікно або натисніть «Add».
-2. Дочекайтеся відображення метаданих (тривалість, розмір, FPS).
-3. За потреби задайте обрізання (Start/End) або натисніть «Don't Trim».
-4. Оберіть бажану висоту (1080p / 1440p / 2160p) чи увімкніть «No crop».
-5. Натисніть «Install». Пакет теми буде збережено у папці тем Opera GX.
-6. Перезапустіть Opera/Opera GX та виберіть нову тему в налаштуваннях браузера.
+## Usage
+1. Launch the app and drop a video file into the window, or click “Add”.
+2. Wait for the metadata to appear (duration, size, FPS).
+3. If needed, set trim times (Start/End) or click “Don't Trim”.
+4. Choose a target height (1080p / 1440p / 2160p) or enable “No crop”.
+5. Click “Install”. The theme ZIP will be saved into the Opera GX themes folder.
+6. Restart Opera/Opera GX and select the new theme in the browser settings.
 
-Куди зберігається пакет теми (macOS):
-- `~/Library/Application Support/com.operasoftware.OperaGX/themes/` — ZIP із темою.
+Where the theme is saved (macOS):
+- `~/Library/Application Support/com.operasoftware.OperaGX/themes/` — the ZIP theme file.
 
-Тимчасові файли:
-- `~/Library/Caches/opera-lw/` — проміжні файли кодування видаляються після завершення експорту.
+Temporary files:
+- `~/Library/Caches/opera-lw/` — intermediate encoding files are cleaned up after export.
 
-## Налаштування FFmpeg у встановленому додатку
-Коли додаток запускається з Finder, він може не бачити змінний `PATH`. Програма шукає `ffmpeg`/`ffprobe` автоматично у типових місцях (Homebrew: `/opt/homebrew/bin`, Intel: `/usr/local/bin`, системні: `/usr/bin`).
+## FFmpeg in the packaged app
+When launched from Finder, macOS GUI apps may not inherit your shell `PATH`. The app will try common locations for `ffmpeg`/`ffprobe` (Homebrew: `/opt/homebrew/bin`, Intel: `/usr/local/bin`, system: `/usr/bin`).
 
-Якщо FFmpeg встановлено в нетиповий шлях — задайте змінні середовища з повними шляхами до бінарників:
-- `OPERALW_FFMPEG=/повний/шлях/до/ffmpeg`
-- `OPERALW_FFPROBE=/повний/шлях/до/ffprobe`
+If FFmpeg is installed in a non‑standard location, set environment variables with full paths to the binaries:
+- `OPERALW_FFMPEG=/full/path/to/ffmpeg`
+- `OPERALW_FFPROBE=/full/path/to/ffprobe`
 
-Перевірка наявності FFmpeg (у терміналі):
+Quick checks (in Terminal):
 - `/opt/homebrew/bin/ffmpeg -version` (Apple Silicon)
 - `/usr/local/bin/ffmpeg -version` (Intel)
 
-Запуск встановленого додатку з терміналу (для діагностики):
+Run the installed app from Terminal (for diagnostics):
 - `/Applications/Opera Live Wallpaper.app/Contents/MacOS/opera-lw`
 
-## Збірка фронтенду вручну
-- `pnpm build` — збирає статику у `dist/`. У Tauri це робиться автоматично через `beforeBuildCommand`.
+## Frontend build
+- `pnpm build` — builds static assets to `dist/`. Tauri also runs this via `beforeBuildCommand`.
 
-## Технічні деталі
-- Фреймворк: Tauri v2 (Rust + Vite/TypeScript фронтенд).
-- Відеокодек: VP9 (`libvpx-vp9`, `-crf 30`, CFR до 30 FPS). Постер: перший кадр JPG.
-- Файл теми — ZIP із `persona.ini`, `background.webm`, `first_frame_start_page.jpg` у корені архіву.
+## Technical details
+- Framework: Tauri v2 (Rust backend + Vite/TypeScript frontend).
+- Video codec: VP9 (`libvpx-vp9`, `-crf 30`, CFR up to 30 FPS). Poster: first frame JPG.
+- Theme file format: ZIP with `persona.ini`, `background.webm`, `first_frame_start_page.jpg` at archive root.
 
-## Підтримка
-Якщо сподобався інструмент — можна «підвезти каву»: https://ko-fi.com/K3K21NBUDO
+## Support
+If this tool helps you, consider a Ko‑fi: https://ko-fi.com/K3K21NBUDO
 
-## Відомі обмеження
-- Наразі експорт іде до папки Opera GX; підтримка інших директорій Opera може з’явитися пізніше.
-- Для дуже довгих відео кодування може тривати значний час.
+## Known limitations
+- Currently exports to the Opera GX themes folder; additional Opera directories may be supported later.
+- Encoding long videos can take significant time.
 
-## Ліцензія
-Ліцензія на FFmpeg див. у `LICENSES/ffmpeg.txt`. Ліцензія на сам застосунок уточнюється автором репозиторію.
+## License
+FFmpeg licensing: see `LICENSES/ffmpeg.txt`. The application’s own license is defined by the repository owner.
