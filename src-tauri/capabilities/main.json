@@ -1,0 +1,13 @@
+{
+  "identifier": "main-default",
+  "description": "Main window capability for dev and prod: enable core defaults, event listen, devtools toggle, and dialog open.",
+  "windows": ["*"],
+  "permissions": [
+    "core:default",
+    "core:event:allow-listen",
+    "core:webview:allow-internal-toggle-devtools",
+    "core:window:allow-close",
+    "core:window:allow-start-dragging",
+    "dialog:default"
+  ]
+}

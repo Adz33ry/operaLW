@@ -10,7 +10,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             commands::ping,
             commands::probe_video,
-            commands::export_package
+            commands::export_package,
+            commands::open_kofi
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

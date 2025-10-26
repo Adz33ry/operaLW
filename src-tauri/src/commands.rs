@@ -121,6 +121,21 @@ pub async fn probe_video(path: String) -> Result<VideoMeta, String> {
     })
 }
 
+#[command]
+pub async fn open_kofi() -> Result<(), String> {
+    let url = "https://ko-fi.com/K3K21NBUDO";
+    let candidates = ["/usr/bin/open", "open"];
+    let mut last: Option<String> = None;
+    for bin in candidates {
+        match StdCommand::new(bin).arg("-g").arg(url).status() {
+            Ok(st) if st.success() => return Ok(()),
+            Ok(st) => { last = Some(format!("{} exited with {:?}", bin, st.code())); },
+            Err(e) => { last = Some(format!("{}: {}", bin, e)); }
+        }
+    }
+    Err(format!("open kofi failed: {}", last.unwrap_or_else(|| "unknown".into())))
+}
+
 #[derive(Deserialize)]
 pub struct ExportRequest {
     pub path: String,
@@ -128,6 +143,8 @@ pub struct ExportRequest {
     pub end: f64,
     pub sizes: Vec<u32>,
     pub name: String,
+    #[serde(default)]
+    pub no_crop: bool,
 }
 
 fn home_dir() -> Result<PathBuf, String> {
@@ -161,9 +178,12 @@ pub async fn export_package(req: ExportRequest) -> Result<String, String> {
     if target_fps == 0 { target_fps = 30; }
 
     let start = req.start.max(0.0);
-    let mut end = req.end.max(start);
+    let mut end = req.end;
     let source_duration = meta.duration;
     if end == 0.0 || end > source_duration { end = source_duration; }
+    if end <= start {
+        return Err(format!("Invalid trim range: start {} must be < end {}", start, end));
+    }
     let seg_duration = (end - start).max(0.0);
 
     // Prepare temp folder
@@ -189,13 +209,21 @@ pub async fn export_package(req: ExportRequest) -> Result<String, String> {
 
     let out_video = tmp.join("background.webm");
     let mut args: Vec<String> = vec![
-        "-y".into(),
+        "-y".into(), "-hide_banner".into(), "-loglevel".into(), "error".into(),
         "-ss".into(), format!("{}", start),
         "-to".into(), format!("{}", end),
         "-i".into(), req.path.clone(),
     ];
-    if let Some(h) = chosen_h {
-        args.extend(["-vf".into(), format!("scale=-2:{},crop=iw:trunc(iw*9/16)", h)]);
+    if !req.no_crop {
+        if let Some(h) = chosen_h {
+            // Adaptive crop to 16:9 after scaling to height h.
+            // If wide (iw/ih >= 16:9) -> crop width; else -> crop height. Keep even sizes.
+            let vf = format!(
+                "scale=-2:{h},crop='if(gte(iw/ih,16/9),trunc(ih*16/9/2)*2,iw)':'if(gte(iw/ih,16/9),ih,trunc(iw*9/16/2)*2)'"
+            );
+            args.extend(["-vf".into(), vf]);
+        }
+        // If no height selected and no_crop=false, we could still crop-only; keep as-is for now.
     }
     args.extend([
         "-c:v".into(), "libvpx-vp9".into(),

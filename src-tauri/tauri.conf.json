@@ -1,0 +1,32 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Opera Live Wallpaper",
+  "version": "0.1.0",
+  "identifier": "dev.opera.lw",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Opera Live Wallpaper",
+        "width": 350,
+        "height": 650,
+        "resizable": false,
+        "devtools": true
+      }
+    ]
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["dmg"],
+    "macOS": {
+      "minimumSystemVersion": "12.0"
+    },
+    "icon": ["icons/icon.png"],
+    "resources": []
+  }
+}

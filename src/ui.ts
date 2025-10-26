@@ -14,9 +14,12 @@ const btnExit = document.getElementById('btnExit') as HTMLButtonElement | null;
 const trimBlock = document.getElementById('trimBlock') as HTMLElement | null;
 const trimStart = document.getElementById('trimStart') as HTMLInputElement | null;
 const trimEnd = document.getElementById('trimEnd') as HTMLInputElement | null;
+const btnNoTrim = document.getElementById('btnNoTrim') as HTMLButtonElement | null;
 const size1080 = document.getElementById('size1080') as HTMLInputElement | null;
 const size1440 = document.getElementById('size1440') as HTMLInputElement | null;
 const size2160 = document.getElementById('size2160') as HTMLInputElement | null;
+const noCrop = document.getElementById('noCrop') as HTMLInputElement | null;
+const longWarn = document.getElementById('longWarn') as HTMLElement | null;
 // Target browser checkboxes
 const tOpera = document.getElementById('tOpera') as HTMLInputElement | null;
 const tGX = document.getElementById('tGX') as HTMLInputElement | null;
@@ -62,6 +65,7 @@ const handleFilePath = async (path: string) => {
     renderBadges(path, meta);
     if (btnInstall) btnInstall.disabled = false;
     const dur = Number(meta?.duration ?? 0);
+    currentDuration = dur;
     if (trimStart && trimEnd && trimBlock) {
       if (dur > 60) {
         trimBlock.classList.add('visible');
@@ -73,6 +77,7 @@ const handleFilePath = async (path: string) => {
         trimEnd.value = String(Math.floor(dur * 10) / 10);
       }
     }
+    if (longWarn) longWarn.style.display = dur >= 30 ? 'block' : 'none';
   } catch (err) {
     if (badges) badges.innerHTML = `<span class="badge warn">probe failed: ${(err as any)?.toString?.() ?? err}</span>`;
   }
@@ -145,9 +150,11 @@ btnInstall?.addEventListener('click', async () => {
     const name = (currentPath.split('/').pop() || 'wallpaper').replace(/\.[^.]+$/, '');
     const targets: string[] = collectTargets();
     const zipPath = await invoke<string>('export_package', {
-      req: { path: currentPath, start, end, sizes, name, targets },
+      req: { path: currentPath, start, end, sizes, name, targets, noCrop: !!noCrop?.checked },
     });
-    if (hint) hint.textContent = `Done: ${zipPath}`;
+    // Just a message (no backend command). Show restart notice.
+    if (hint) hint.textContent = 'Ready — please restart the browser.';
+    // No top notice bar anymore
   } catch (e) {
     if (hint) hint.textContent = `Export failed: ${e}`;
   } finally {
@@ -191,6 +198,15 @@ fileInput?.addEventListener('change', async () => {
   fileInput.value = '';
 });
 
+// "Don't Trim" — set full duration and hide trim UI (visible only when duration > 60)
+let currentDuration = 0;
+btnNoTrim?.addEventListener('click', () => {
+  if (!trimStart || !trimEnd) return;
+  trimStart.value = '0';
+  trimEnd.value = String(Math.floor(currentDuration * 10) / 10);
+  if (trimBlock) trimBlock.classList.remove('visible');
+});
+
 // Enforce exclusive selection among 1080/1440/2160 checkboxes
 function sizeInputs(): HTMLInputElement[] {
   return [size1080, size1440, size2160].filter(Boolean) as HTMLInputElement[];
@@ -207,6 +223,14 @@ for (const el of sizeInputs()) {
     if (el.checked) uncheckOthers(el);
   });
 }
+
+// Toggle sizes disabled when No crop is on
+noCrop?.addEventListener('change', () => {
+  const disabled = !!noCrop.checked;
+  for (const el of sizeInputs()) {
+    el.disabled = disabled;
+  }
+});
 
 // Targets detection and persistence
 type TargetsSave = { opera?: boolean; gx?: boolean };
@@ -248,3 +272,17 @@ async function detectTargets() {
 }
 
 detectTargets();
+
+// Ko‑fi button: open via backend (reliable in Tauri) and show status
+const btnKofi = document.getElementById('btnKofi') as HTMLElement | null;
+btnKofi?.addEventListener('click', async (e) => {
+  e.preventDefault();
+  try {
+    await invoke('open_kofi');
+    if (hint) hint.textContent = 'Opening Ko-fi…';
+  } catch (_) {
+    if (hint) hint.textContent = 'Failed to open Ko-fi';
+  }
+});
+
+// Ko-fi anchor opens in browser via target=_blank; no JS needed

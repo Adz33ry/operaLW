@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=350, initial-scale=1" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' ipc: ws:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' blob:;" />
-    <title>Opera LW</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' ipc: ws:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; media-src 'self' blob:;" />
+    <title>Opera Live Wallpaper</title>
     <style>
       :root { color-scheme: dark light; }
       *, *::before, *::after { box-sizing: border-box; }
@@ -12,6 +12,7 @@
       body {
         font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
         background: #0f0f12; color: #e6e6e6;
+        position: relative;
       }
       .wrap { display: grid; grid-template-rows: 1fr auto; place-items: stretch; height: 100%; padding: 6px; gap: 6px; overflow: hidden; }
       .drop {
@@ -25,8 +26,8 @@
       .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; justify-content: center; }
       .badge { font-size: 11px; background: #1d1d26; border: 1px solid #2c2c38; padding: 4px 8px; border-radius: 999px; color: #d5d5e2; }
       .badge.warn { border-color: #7b5cff; color: #e6e6ff; }
-      .sizes { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
-      .sizes label { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; background: #1a1a22; border: 1px solid #2c2c38; padding: 6px 10px; border-radius: 999px; }
+      .sizes { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 8px; }
+      .sizes label { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; background: #1a1a22; border: 1px solid #2c2c38; padding: 4px 8px; border-radius: 12px; white-space: nowrap; }
       .targets { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
       .targets label { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; background: #1a1a22; border: 1px solid #2c2c38; padding: 6px 10px; border-radius: 999px; }
       .controls { display: flex; gap: 8px; }
@@ -39,16 +40,25 @@
       .meta { margin-top: 8px; font-size: 12px; color: #bdbdc7; }
       .trim { display: none; margin-top: 8px; font-size: 12px; }
       .trim.visible { display: block; }
+      .warn { display: none; margin-top: 6px; font-size: 12px; color: #eac49f; opacity: 0.9; }
+      .kofi { position: absolute; top: 6px; right: 6px; z-index: 10; }
+      .btn.small { padding: 4px 8px; font-size: 11px; flex: 0 0 auto; }
+      /* Ko-fi full-width top bar */
+      .kofi { position: absolute; top: 0; left: 0; right: 0; z-index: 10; }
+      .kofi a { display: block; width: 100%; }
+      .kofi img { display: block; width: 100%; height: 40px; object-fit: cover; }
     </style>
   </head>
   <body>
-    <div class="wrap">
+    <div id="kofiWidget" class="kofi"><a id="btnKofi" href="https://ko-fi.com/K3K21NBUDO" target="_blank" rel="noopener noreferrer" aria-label="Support on Ko‑fi"><img alt="Ko‑fi" src="https://ko-fi.com/img/githubbutton_sm.svg"></a></div>
+    <div class="wrap" style="padding-top: 46px;">
       <div class="drop" id="drop" role="region" aria-label="Drop a video file">
         <div>
           <div class="hint" id="hint">Drop a video file here (Finder) or Add…</div>
           <div style="height:10px"></div>
           <button id="btnAdd" class="btn" type="button">Add</button>
           <input id="fileInput" type="file" accept="video/mp4,video/quicktime,video/webm,image/gif" style="display:none" />
+          <div id="longWarn" class="warn">import may be take long time</div>
           <div class="badges" id="badges" aria-live="polite"></div>
           <div class="meta trim" id="trimBlock">
             <div>Trim segment (s):</div>
@@ -56,11 +66,15 @@
               <label>Start <input id="trimStart" type="number" step="0.1" min="0" value="0"></label>
               <label>End <input id="trimEnd" type="number" step="0.1" min="0" value="0"></label>
             </div>
+            <div style="margin-top:6px">
+              <button id="btnNoTrim" class="btn" type="button">Don't Trim</button>
+            </div>
           </div>
           <div class="sizes" id="sizes">
             <label><input id="size1080" type="checkbox" checked>1080p</label>
             <label><input id="size1440" type="checkbox">1440p</label>
             <label><input id="size2160" type="checkbox">2160p</label>
+            <label><input id="noCrop" type="checkbox">No crop</label>
           </div>
           <div class="targets" id="targets">
             <label><input id="tOpera" type="checkbox">Opera</label>
