@@ -18,7 +18,6 @@ A small macOS desktop utility that packages a video into a wallpaper theme for O
 ## Install & Run
 - Direct install (recommended): download the latest `.dmg` from GitHub Releases and drag the app into Applications.
   - Latest release: https://github.com/Adz33ry/operaLW/releases/latest
-  - Full list: https://github.com/Adz33ry/operaLW/releases
 
 - Build locally: generate a `.dmg` and install the app
   - `pnpm install`
